@@ -15,8 +15,7 @@ def getXY(filePath):
         x.append(pvalue[k])
     for index in true_subgraph:
         y[index]=1
-    print x
-    print y
+    print filePath,'\n',x,y
     return x,y
 
 

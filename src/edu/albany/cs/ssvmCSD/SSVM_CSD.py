@@ -54,7 +54,7 @@ def read_examples(folder_path, sparm):
         file_path=folder_path+fileName
         x,y=read_dataFile.getXY(file_path)
         examples.append((x,y))
-        x_to_file_dictionary[x]=file_path
+        x_to_file_dictionary[str(x)]=file_path
     return examples
 
 def init_model(sample, sm, sparm):
