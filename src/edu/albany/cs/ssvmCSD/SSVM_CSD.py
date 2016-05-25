@@ -63,7 +63,7 @@ def init_model(sample, sm, sparm):
     # list of four features.  We just want a linear rule, so we have a
     # weight corresponding to each feature.  We also add one to allow
     # for a last "bias" feature.
-    sm.size_psi = len(sample[0][0])+1
+    sm.size_psi = 6
     print 'feature num:',sm.size_psi
 def init_constraints(sample, sm, sparm):
     """Initializes special constraints.
@@ -159,7 +159,7 @@ def find_most_violated_constraint(x, y, sm, sparm):
     print 'constrain func:',file_name
     iht_ins = IHT(path.abspath(path.join(__file__ ,"../../../../../.."))+"/data/"+file_name)
     ybar=iht_ins.getX()
-    print ybar
+    print 'ybar:-',ybar
     return ybar
     
 
