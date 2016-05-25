@@ -2,7 +2,30 @@
 
 # Thomas Finley, tfinley@gmail.com
 x_to_file_dictionary=dict()
+def parse_parameters(sparm):
+    """Sets attributes of sparm based on command line arguments.
+    
+    This gives the user code a chance to change sparm based on the
+    custom command line arguments.  The custom command line arguments
+    are stored in sparm.argv as a list of strings.  The custom command
+    lines are stored in '--option', then 'value' sequence.
+    
+    If this function is not implemented, any custom command line
+    arguments are ignored and sparm remains unchanged."""
+    sparm.arbitrary_parameter = 'I am an arbitrary parameter!'
 
+def parse_parameters_classify(attribute, value):
+    """Process a single custom command line argument for the classifier.
+
+    This gives the user code a chance to change the state of the
+    classifier based on a single custom command line argument, e.g.,
+    one that begins with two dashes.  This function will be called
+    multiple times if there are multiple custom command line
+    arguments.
+
+    If this function is not implemented, any custom command line
+    arguments are ignored."""
+    print 'Got a custom command line argument %s %s' % (attribute, value)
 
 def read_examples(folder_path, sparm):
     """Reads and returns x,y example pairs from a file.    
@@ -42,7 +65,54 @@ def init_model(sample, sm, sparm):
     # for a last "bias" feature.
     sm.size_psi = 6
     print 'feature num:',sm.size_psi
+def init_constraints(sample, sm, sparm):
+    """Initializes special constraints.
 
+    Returns a sequence of initial constraints.  Each constraint in the
+    returned sequence is itself a sequence with two items (the
+    intention is to be a tuple).  The first item of the tuple is a
+    document object.  The second item is a number, indicating that the
+    inner product of the feature vector of the document object with
+    the linear weights must be greater than or equal to the number
+    (or, in the nonlinear case, the evaluation of the kernel on the
+    feature vector with the current model must be greater).  This
+    initializes the optimization problem by allowing the introduction
+    of special constraints.  Typically no special constraints are
+    necessary.  A typical constraint may be to ensure that all feature
+    weights are positive.
+
+    Note that the slack id must be set.  The slack IDs 1 through
+    len(sample) (or just 1 in the combined constraint option) are used
+    by the training examples in the sample, so do not use these if you
+    do not intend to share slack with the constraints inferred from
+    the training data.
+
+    The default behavior is equivalent to returning an empty list,
+    i.e., no constraints."""
+    import svmapi
+
+    if True:
+        # Just some example cosntraints.
+        c, d = svmapi.Sparse, svmapi.Document
+        # Return some really goofy constraints!  Normally, if the SVM
+        # is allowed to converge normally, the second and fourth
+        # features are 0 and -1 respectively for sufficiently high C.
+        # Let's make them be greater than 1 and 0.2 respectively!!
+        # Both forms of a feature vector (sparse and then full) are
+        # shown.
+        return [(d([c([(1,1)])],slackid=len(sample)+1),   1),
+                (d([c([0,0,0,1])],slackid=len(sample)+1),.2)]
+    # Encode positivity constraints.  Note that this constraint is
+    # satisfied subject to slack constraints.
+    constraints = []
+    for i in xrange(sm.size_psi):
+        # Create a sparse vector which selects out a single feature.
+        sparse = svmapi.Sparse([(i,1)])
+        # The left hand side of the inequality is a document.
+        lhs = svmapi.Document([sparse], costfactor=1, slackid=i+1+len(sample))
+        # Append the lhs and the rhs (in this case 0).
+        constraints.append((lhs, 0))
+    return constraints
 
 
 def classify_example(x, sm, sparm):
@@ -240,4 +310,31 @@ def read_model(filename, sparm):
     import cPickle, bz2
     return cPickle.load(bz2.BZ2File(filename))
 
+def write_label(fileptr, y):
+    """Write a predicted label to an open file.
 
+    Called during classification, this function is called for every
+    example in the input test file.  In the default behavior, the
+    label is written to the already open fileptr.  (Note that this
+    object is a file, not a string.  Attempts to close the file are
+    ignored.)  The default behavior is equivalent to
+    'print>>fileptr,y'"""
+    print>>fileptr,y
+
+def print_help():
+    """Help printed for badly formed CL-arguments when learning.
+
+    If this function is not implemented, the program prints the
+    default SVM^struct help string as well as a note about the use of
+    the --m option to load a Python module."""
+    import svmapi
+    print svmapi.default_help
+    print "This is a help string for the learner!"
+
+def print_help_classify():
+    """Help printed for badly formed CL-arguments when classifying.
+
+    If this function is not implemented, the program prints the
+    default SVM^struct help string as well as a note about the use of
+    the --m option to load a Python module."""
+    print "This is a help string for the classifer!"
