@@ -188,8 +188,8 @@ def psi(x, y, sm, sparm):
     avg_SubGraph=svmapi.Sparse(np.dot(x,y),kernel_id=2)
     avg_WholeGraph=svmapi.Sparse(sum(x)/len(x),kernel_id=3)
     avg_OutSubgraph=svmapi.Sparse(np.dot(x,np.subtract(1,y))/sum(np.subtract(1,y)),kernel_id=4)
-    avg_Quad_SubGraph=svmapi.Sparse(avg_SubGraph*avg_SubGraph,kernel_id=5)
-    avg_Log_SubGraph=svmapi.Sparse(np.log(avg_SubGraph),kernel_id=6)
+    avg_Quad_SubGraph=svmapi.Sparse(np.dot(x,y)*np.dot(x,y),kernel_id=5)
+    avg_Log_SubGraph=svmapi.Sparse(np.log(np.dot(x,y)),kernel_id=6)
     
     
     return svmapi.Document([SubGraph_size,avg_SubGraph,avg_WholeGraph,avg_OutSubgraph,avg_Quad_SubGraph,avg_Log_SubGraph])
