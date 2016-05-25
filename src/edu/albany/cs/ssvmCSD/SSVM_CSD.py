@@ -28,18 +28,13 @@ def parse_parameters_classify(attribute, value):
     print 'Got a custom command line argument %s %s' % (attribute, value)
 
 def read_examples(folder_path, sparm):
-    """Reads and returns x,y example pairs from a file.
-    
+    """Reads and returns x,y example pairs from a file.    
     This reads the examples contained at the file at path filename and
     returns them as a sequence.  Each element of the sequence should
     be an object 'e' where e[0] and e[1] is the pattern (x) and label
     (y) respectively.  Specifically, the intention is that the element
     be a two-element tuple containing an x-y pair."""
-    # We're not actually reading a file in this sample binary
-    # classification task, but rather just returning a contrived
-    # problem for learning.  The correct hypothesis would obviously
-    # tend to have a positive weight for the first feature, and a
-    # negative weight for the 4th feature.
+ 
     
     import read_dataFile
     from os import listdir
@@ -69,7 +64,7 @@ def init_model(sample, sm, sparm):
     # weight corresponding to each feature.  We also add one to allow
     # for a last "bias" feature.
     sm.size_psi = len(sample[0][0])+1
-
+    print 'feature num:',sm.size_psi
 def init_constraints(sample, sm, sparm):
     """Initializes special constraints.
 
@@ -146,8 +141,25 @@ def find_most_violated_constraint(x, y, sm, sparm):
     discy, discny = y*score, -y*score + 1
     if discy > discny: return y
     return -y"""
+    import os
+    import os.path as path
+    import jnius_config
+    from jnius import autoclass
+    global x_to_file_dictionary
+    jnius_config.add_classpath(os.path.dirname(__file__)+"/*")
+    print jnius_config.expand_classpath()
     
-    ybar=IHT(fileName)
+    
+    
+    System = autoclass('java.lang.System')
+    print System.getProperty('java.class.path')
+    
+    IHT = autoclass('edu.albany.cs.ssvmCSD.IHT_Bridge')
+    file_name=x_to_file_dictionary[str(x)]
+    print 'constrain func:',file_name
+    iht_ins = IHT(path.abspath(path.join(__file__ ,"../../../../../.."))+"/data/"+file_name)
+    ybar=iht_ins.getX()
+    print ybar
     return ybar
     
 
